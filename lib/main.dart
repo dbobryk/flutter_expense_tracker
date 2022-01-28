@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:expense_tracker/widgets/chart.dart';
 import 'package:expense_tracker/widgets/new_transaction.dart';
 import 'package:expense_tracker/widgets/transaction_list.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'models/transaction.dart';
@@ -12,15 +15,25 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Expense Tracker',
-      theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
-        primaryColor: Colors.lightBlue,
-        fontFamily: "QuickSand",
-      ),
-      home: MyHomePage(),
-    );
+    return Platform.isIOS
+        ? CupertinoApp(
+            title: 'Expense Tracker',
+            theme: const CupertinoThemeData(
+              primaryColor: Colors.lightBlue,
+              primaryContrastingColor: Colors.grey,
+              // fontFamily: "QuickSand",
+            ),
+            home: MyHomePage(),
+          )
+        : MaterialApp(
+            title: 'Expense Tracker',
+            theme: ThemeData(
+              primarySwatch: Colors.lightBlue,
+              primaryColor: Colors.lightBlue,
+              fontFamily: "QuickSand",
+            ),
+            home: MyHomePage(),
+          );
   }
 }
 
@@ -37,18 +50,31 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
-    AppBar appBar = AppBar(
-      title: const Text('Expense Tracker',
-          style: TextStyle(
-            fontFamily: "OpenSans",
-          )),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => _startAddNewTransaction(context),
-        ),
-      ],
-    );
+    PreferredSizeWidget appBar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text("Expense Tracker"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => _startAddNewTransaction(context),
+                  child: const Icon(CupertinoIcons.add),
+                )
+              ],
+            ),
+          )
+        : AppBar(
+            title: const Text('Expense Tracker',
+                style: TextStyle(
+                  fontFamily: "OpenSans",
+                )),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _startAddNewTransaction(context),
+              ),
+            ],
+          );
 
     final _txListWidget = SizedBox(
       height: mediaQuery.size.height * .6,
@@ -58,46 +84,59 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
 
-    return Scaffold(
-        appBar: appBar,
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () => _startAddNewTransaction(context),
+    final body = SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Show Chart'),
+                  Switch.adaptive(
+                    activeColor: Theme.of(context).primaryColorLight,
+                    value: _chartShown,
+                    onChanged: (val) {
+                      setState(() {
+                        _chartShown = val;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            if (!isLandscape)
+              SizedBox(
+                height: mediaQuery.size.height * .3,
+                child: Chart(_recentTransactions),
+              ),
+            if (!isLandscape) _txListWidget,
+            if (isLandscape)
+              _chartShown
+                  ? SizedBox(
+                      height: mediaQuery.size.height * .7,
+                      child: Chart(_recentTransactions),
+                    )
+                  : _txListWidget
+          ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              if (isLandscape)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Show Chart'),
-                    Switch(
-                      value: _chartShown,
-                      onChanged: (val) {
-                        setState(() {
-                          _chartShown = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              if (!isLandscape)
-                SizedBox(
-                  height: mediaQuery.size.height * .3,
-                  child: Chart(_recentTransactions),
-                ),
-              if (!isLandscape) _txListWidget,
-              if (isLandscape)
-                _chartShown
-                    ? SizedBox(
-                        height: mediaQuery.size.height * .7,
-                        child: Chart(_recentTransactions),
-                      )
-                    : _txListWidget
-            ],
-          ),
-        ));
+      ),
+    );
+
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            child: body,
+            navigationBar: appBar,
+          )
+        : Scaffold(
+            appBar: appBar,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    child: const Icon(Icons.add),
+                    onPressed: () => _startAddNewTransaction(context),
+                  ),
+            body: body,
+          );
   }
 
   void _addNewTransaction(String item, double amount, DateTime chosenDate) {
