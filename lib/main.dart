@@ -29,47 +29,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [];
-  //   Transaction(
-  //     id: "001",
-  //     item: "Shoes",
-  //     amount: 99.99,
-  //     date: DateTime.now(),
-  //   ),
-  //   Transaction(
-  //     id: "002",
-  //     item: "Shirt",
-  //     amount: 23.99,
-  //     date: DateTime.now(),
-  //   )
-  // ];
-
-  List<Transaction> get _recentTransactions {
-    return _userTransactions.where(
-      (e) {
-        return e.date.isAfter(
-          DateTime.now().subtract(
-            const Duration(days: 7),
-          ),
-        );
-      },
-    ).toList();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Expense Tracker',
-              style: TextStyle(
-                fontFamily: "OpenSans",
-              )),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _startAddNewTransaction(context),
-            ),
-          ],
+    AppBar appBar = AppBar(
+      title: const Text('Expense Tracker',
+          style: TextStyle(
+            fontFamily: "OpenSans",
+          )),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () => _startAddNewTransaction(context),
         ),
+      ],
+    );
+    return Scaffold(
+        appBar: appBar,
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () => _startAddNewTransaction(context),
@@ -77,10 +53,16 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Chart(_recentTransactions),
-              TransactionList(
-                _userTransactions,
-                _deleteTransaction,
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.22,
+                child: Chart(_recentTransactions),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.64,
+                child: TransactionList(
+                  _userTransactions,
+                  _deleteTransaction,
+                ),
               ),
             ],
           ),
@@ -116,5 +98,17 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _userTransactions.removeWhere((element) => element.id == id);
     });
+  }
+
+  List<Transaction> get _recentTransactions {
+    return _userTransactions.where(
+      (e) {
+        return e.date.isAfter(
+          DateTime.now().subtract(
+            const Duration(days: 7),
+          ),
+        );
+      },
+    ).toList();
   }
 }
