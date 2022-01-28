@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'models/transaction.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -29,9 +31,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [];
+  bool _chartShown = false;
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
     AppBar appBar = AppBar(
       title: const Text('Expense Tracker',
           style: TextStyle(
@@ -44,6 +49,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+
+    final _txListWidget = SizedBox(
+      height: mediaQuery.size.height * .6,
+      child: TransactionList(
+        _userTransactions,
+        _deleteTransaction,
+      ),
+    );
+
     return Scaffold(
         appBar: appBar,
         floatingActionButton: FloatingActionButton(
@@ -53,17 +67,34 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.22,
-                child: Chart(_recentTransactions),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.64,
-                child: TransactionList(
-                  _userTransactions,
-                  _deleteTransaction,
+              if (isLandscape)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Show Chart'),
+                    Switch(
+                      value: _chartShown,
+                      onChanged: (val) {
+                        setState(() {
+                          _chartShown = val;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-              ),
+              if (!isLandscape)
+                SizedBox(
+                  height: mediaQuery.size.height * .3,
+                  child: Chart(_recentTransactions),
+                ),
+              if (!isLandscape) _txListWidget,
+              if (isLandscape)
+                _chartShown
+                    ? SizedBox(
+                        height: mediaQuery.size.height * .7,
+                        child: Chart(_recentTransactions),
+                      )
+                    : _txListWidget
             ],
           ),
         ));
