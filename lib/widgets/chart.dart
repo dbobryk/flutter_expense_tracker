@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:expense_tracker/models/transaction.dart';
 import 'package:expense_tracker/widgets/chart_bar.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:intl/intl.dart';
 class Chart extends StatelessWidget {
   final List<Transaction> userTransactions;
 
-  Chart(this.userTransactions);
+  const Chart(this.userTransactions);
 
   List<Map<String, Object>> get groupedTransactionValues {
     return List.generate(7, (index) {

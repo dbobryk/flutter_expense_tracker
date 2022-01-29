@@ -1,14 +1,13 @@
-import 'dart:io';
+// ignore_for_file: use_key_in_widget_constructors
 
 import 'package:expense_tracker/widgets/adaptive_flat_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function submitTransaction;
 
-  NewTransaction(this.submitTransaction);
+  const NewTransaction(this.submitTransaction);
 
   @override
   _NewTransactionState createState() => _NewTransactionState();
